@@ -796,8 +796,8 @@ export const CHAPTERS = [
         id: '4-6',
         solverNoise: 1,
         title: 'The Master Suite',
-        brief: 'His Lordship’s bedroom. A footman at the door, a night watchman pacing the landing, a camera by the bed.',
-        hint: 'Creak the board downstairs, take the right-hand stairs, slip behind the watchman and out through the bedroom window.',
+        brief: 'His Lordship’s bedroom. A footman at the door, a camera on the landing, another by the bed.',
+        hint: 'Creak the board downstairs, take the right-hand stairs, time the landing camera, and leave by the bedroom window.',
         loot: { name: 'The Ashgrove Crown', value: 600, kind: 'crown' },
         map: [
           '##########',
@@ -819,9 +819,11 @@ export const CHAPTERS = [
         ],
         guards: [
           { path: [[5, 6]], face: 270, hear: 7, range: 3.6 },
-          { path: [[1, 7], [8, 7]], speed: 1.0, wait: 1.4, hear: 3 },
         ],
-        cameras: [{ at: [9.0, 2.5], dir: 165, sweep: 40, period: 5, range: 4.5, fov: 34 }],
+        cameras: [
+          { at: [9.0, 2.5], dir: 165, sweep: 40, period: 5, range: 4.5, fov: 34 },
+          { at: [1.0, 6.0], dir: 0, sweep: 50, period: 4, range: 5, fov: 32 },
+        ],
       },
     ],
   },
