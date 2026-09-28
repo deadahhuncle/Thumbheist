@@ -1,0 +1,17 @@
+import { chromium, devices } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ ...devices['Pixel 7'] });
+const page = await ctx.newPage();
+await page.goto('http://localhost:8123/');
+await page.waitForFunction(() => navigator.serviceWorker && navigator.serviceWorker.controller !== null || new Promise((r) => navigator.serviceWorker.ready.then(() => setTimeout(() => r(true), 500))), null, { timeout: 15000 });
+await page.waitForTimeout(1500);
+const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); return { active: !!(r && r.active), keys: await caches.keys() }; });
+console.log('sw', JSON.stringify(sw));
+await ctx.setOffline(true);
+await page.reload();
+await page.waitForTimeout(1200);
+const ok = await page.evaluate(() => ({ title: document.title, levels: window.__oth?.LEVELS?.length, font: document.fonts.check('800 20px "Big Shoulders Display"') }));
+console.log('offline reload', JSON.stringify(ok));
+const manifest = await (await fetch('http://localhost:8123/manifest.webmanifest')).json();
+console.log('manifest', manifest.name, manifest.display, manifest.orientation, manifest.icons.length);
+await browser.close();

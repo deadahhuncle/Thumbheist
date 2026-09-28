@@ -11,8 +11,8 @@ import { FX } from './fx.js';
 import { audio } from './audio.js';
 import { clamp, dist, angLerp } from './geom.js';
 
-const STILL_PX = 7;          // finger jitter tolerance before a hold counts as moving
-const HOLD_DELAY = 0.16;     // seconds of stillness before waiting kicks in
+const STILL_PX = 4;          // finger jitter tolerance while holding still (CSS px)
+const HOLD_DELAY = 0.3;      // the finger must stay within STILL_PX for this long to count as a hold
 const GRAB_TILES = 1.0;      // how close to the thief a plan may start
 const CANCEL_LEN = 0.35;     // lines shorter than this are treated as a cancel
 
@@ -186,6 +186,7 @@ export class Game {
     this.setState('drawing');
     this.anchor = [px, py];
     this.still = 0;
+    this.hist = [{ t: this.time, x: px, y: py }];
     this.lastTickSec = 0;
     this.previewCaught = false;
     this.previewEscaped = false;
@@ -202,6 +203,7 @@ export class Game {
   onMove(px, py) {
     if (this.state !== 'drawing') { this.finger = [px, py]; return; }
     this.finger = [px, py];
+    this.hist.push({ t: this.time, x: px, y: py });
     if (Math.hypot(px - this.anchor[0], py - this.anchor[1]) > STILL_PX) {
       this.anchor = [px, py];
       this.still = 0;
@@ -355,7 +357,14 @@ export class Game {
   updateDrawing(dt) {
     const dr = this.drawer;
     this.still += dt;
-    if (this.still > HOLD_DELAY) {
+    // A hold means the thumb has barely moved over the last HOLD_DELAY seconds,
+    // so a slow, careful drag never turns into accidental waiting.
+    const now = this.time;
+    while (this.hist.length > 1 && now - this.hist[1].t > HOLD_DELAY) this.hist.shift();
+    let spread = 0;
+    const f = this.finger || this.anchor;
+    for (const h of this.hist) spread = Math.max(spread, Math.hypot(h.x - f[0], h.y - f[1]));
+    if (this.still > HOLD_DELAY && spread <= STILL_PX) {
       if (dr.hold(dt)) {
         this.sim.advanceTo(dr.plan.end);
         if (!this.holding) {
@@ -563,6 +572,7 @@ export class Game {
       scene.planning = true;
       scene.events = s.events;
       scene.doorTimes = this.doorTimes(s);
+      scene.powerUntil = (s.events.find((e) => e.type === 'power') || {}).until;
       const caughtT = s.caught ? s.caught.t : null;
       scene.planStyle = { caughtT, locks: dr.lockEvents, showCaughtMark: caughtT != null };
       const hx = plan.xs[plan.n - 1], hy = plan.ys[plan.n - 1];

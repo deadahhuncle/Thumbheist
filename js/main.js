@@ -180,7 +180,7 @@ const game = new Game($('#board'), {
       hud.timeV.textContent = `${h.time.toFixed(1)}/${h.par.toFixed(1)}`;
       set(hud.time, h.time > h.par + 1e-6 ? 'warn' : h.state === 'escaped' || (h.projected && h.loot) ? 'ok' : null);
     } else {
-      hud.timeV.textContent = `${h.par.toFixed(1)}s`;
+      hud.timeV.textContent = `par ${h.par.toFixed(1)}`;
       set(hud.time, null);
     }
     hud.ff.hidden = !h.fast;
@@ -520,6 +520,21 @@ document.addEventListener('visibilitychange', () => {
 });
 
 document.addEventListener('pointerdown', () => audio.unlock(), { capture: true, passive: true });
+
+// Desktop conveniences: Esc pauses/resumes, R restarts the job.
+document.addEventListener('keydown', (e) => {
+  if (current !== 'game' || e.repeat) return;
+  const pauseOpen = !$('#sheet-pause').hidden;
+  if (e.key === 'Escape') {
+    if (pauseOpen) resumeGame();
+    else if ($('#sheet-result').hidden && $('#briefing').hidden) $('#btn-pause').click();
+  } else if ((e.key === 'r' || e.key === 'R') && game.state !== 'drawing' && $('#briefing').hidden) {
+    audio.play('rewind');
+    closeSheets();
+    game.pause(false);
+    game.retry();
+  }
+});
 // iOS: stop double-tap zoom and pinch on the whole app
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('dblclick', (e) => e.preventDefault());

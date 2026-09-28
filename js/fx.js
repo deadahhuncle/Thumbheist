@@ -3,6 +3,8 @@
 
 import { TAU } from './geom.js';
 
+const REDUCED = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export class FX {
   constructor() {
     this.parts = [];
@@ -51,9 +53,9 @@ export class FX {
     this.labels.push({ x, y, text, t: 0, dur: opts.dur ?? 1.1, color: opts.color ?? '#fff', size: opts.size ?? 15 });
   }
 
-  shake(a) { this.shakeAmt = Math.max(this.shakeAmt, a); }
+  shake(a) { if (!REDUCED) this.shakeAmt = Math.max(this.shakeAmt, a); }
 
-  flash(color, a) { this.flashColor = color; this.flashA = Math.max(this.flashA, a); }
+  flash(color, a) { this.flashColor = color; this.flashA = Math.max(this.flashA, REDUCED ? a * 0.4 : a); }
 
   update(dt) {
     this.time += dt;

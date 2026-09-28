@@ -322,7 +322,11 @@ for (const [ci, ch] of CHAPTERS.entries()) {
   for (const [li, def] of ch.levels.entries()) {
     if (only.length && !only.includes(def.id)) continue;
     const level = parseLevel(def, { chapter: ci, index: li, theme: ch.theme });
-    for (const k of disabled) level[k] = k === 'power' ? null : [];
+    for (const k of disabled) {
+      const m = k.match(/^(guards|cameras|lasers)(\d+)$/);
+      if (m) level[m[1]] = level[m[1]].filter((_, i) => i !== +m[2]);
+      else level[k] = k === 'power' ? null : [];
+    }
     const t0 = performance.now();
     M = { range: 0, half: 0, bump: 0, laser: 0 };
     const any = solve(level, 0);

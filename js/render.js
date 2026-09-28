@@ -64,7 +64,7 @@ export class Renderer {
   }
 
   resize(cssW, cssH, area) {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.cw = cssW; this.ch = cssH;
     this.canvas.width = Math.round(cssW * this.dpr);
     this.canvas.height = Math.round(cssH * this.dpr);
@@ -89,6 +89,7 @@ export class Renderer {
       }
     }
     this.corners = [...c].map((s) => s.split(',').map(Number));
+    this.hearReach = Math.max(3, ...level.guards.filter((g) => !g.deaf).map((g) => g.hear), 0);
     this.buildStatic();
   }
 
@@ -126,6 +127,7 @@ export class Renderer {
     const R2 = rng(99);
     ctx.fillStyle = 'rgba(255,255,255,0.025)';
     for (let i = 0; i < (this.cw * this.ch) / 900; i++) ctx.fillRect(R2() * this.cw, R2() * this.ch, 1.2, 1.2);
+    if (T.pattern === 'tiles') this.drawCityBelow(ctx);
 
     this.worldTransform(ctx);
     // building footprint drop shadow
@@ -215,11 +217,79 @@ export class Renderer {
       this.drawEmitter(ctx, l.ax, l.ay, Math.atan2(l.by - l.ay, l.bx - l.ax));
       this.drawEmitter(ctx, l.bx, l.by, Math.atan2(l.ay - l.by, l.ax - l.bx));
     }
+    // vignette, baked in so it costs nothing per frame
+    this.screenTransform(ctx);
+    const vig = ctx.createRadialGradient(this.cw / 2, this.ch * 0.48, Math.min(this.cw, this.ch) * 0.45, this.cw / 2, this.ch * 0.48, Math.hypot(this.cw, this.ch) * 0.62);
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.5)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, this.cw, this.ch);
+  }
+
+  // Tower levels: the street grid glitters far below.
+  drawCityBelow(ctx) {
+    const R = rng(1234);
+    const w = this.cw, h = this.ch;
+    ctx.save();
+    // avenues with streams of car lights
+    for (let i = 0; i < 7; i++) {
+      const vertical = i % 2 === 0;
+      const p = R() * (vertical ? w : h);
+      ctx.strokeStyle = 'rgba(255,190,110,0.06)';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      if (vertical) { ctx.moveTo(p, 0); ctx.lineTo(p + (R() - 0.5) * 80, h); }
+      else { ctx.moveTo(0, p); ctx.lineTo(w, p + (R() - 0.5) * 80); }
+      ctx.stroke();
+      for (let k = 0; k < 40; k++) {
+        const u = R();
+        const x = vertical ? p + (R() - 0.5) * 4 : u * w, y = vertical ? u * h : p + (R() - 0.5) * 4;
+        ctx.fillStyle = R() < 0.5 ? 'rgba(255,220,150,0.55)' : 'rgba(255,90,80,0.45)';
+        ctx.fillRect(x, y, 1.5, 1.5);
+      }
+    }
+    // rooftops and windows
+    for (let i = 0; i < (w * h) / 700; i++) {
+      const x = R() * w, y = R() * h;
+      const c = R();
+      ctx.fillStyle = c < 0.7 ? 'rgba(255,214,130,0.35)' : c < 0.9 ? 'rgba(150,190,255,0.35)' : 'rgba(255,255,255,0.5)';
+      ctx.fillRect(x, y, 1.3, 1.3);
+    }
+    ctx.restore();
+  }
+
+  // A floor run whose walls have open air beyond them on both sides: a skybridge.
+  isBridge(x, y) {
+    const L = this.level;
+    if (this.theme.pattern !== 'tiles') return false;
+    let a = x, b = x;
+    while (a > 0 && kindAt(L, a - 1, y) !== WALL && kindAt(L, a - 1, y) !== VOID) a--;
+    while (b < W - 1 && kindAt(L, b + 1, y) !== WALL && kindAt(L, b + 1, y) !== VOID) b++;
+    if (a - 2 < 0 || b + 2 > W - 1) return false;
+    return kindAt(L, a - 1, y) === WALL && kindAt(L, a - 2, y) === VOID && kindAt(L, b + 1, y) === WALL && kindAt(L, b + 2, y) === VOID;
   }
 
   drawFloorCell(ctx, x, y, R) {
     const T = this.theme;
     const base = (x + y) % 2 ? T.floor[1] : T.floor[0];
+    if (this.isBridge(x, y)) {
+      // glass: let the city below show through, with a cool sheen and mullions
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(x, y, 1, 1);
+      const Rc = rng(x * 131 + y * 17);
+      for (let i = 0; i < 9; i++) {
+        ctx.fillStyle = Rc() < 0.7 ? 'rgba(255,214,130,0.55)' : 'rgba(150,190,255,0.5)';
+        ctx.fillRect(x + Rc(), y + Rc(), 0.035, 0.035);
+      }
+      ctx.fillStyle = 'rgba(140,180,255,0.12)';
+      ctx.fillRect(x, y, 1, 1);
+      ctx.strokeStyle = 'rgba(190,210,255,0.28)';
+      ctx.lineWidth = 0.03;
+      ctx.strokeRect(x + 0.015, y + 0.015, 0.97, 0.97);
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.beginPath(); ctx.moveTo(x + 0.15, y + 0.85); ctx.lineTo(x + 0.55, y + 0.15); ctx.stroke();
+      return;
+    }
     ctx.fillStyle = base;
     ctx.fillRect(x, y, 1, 1);
     ctx.strokeStyle = T.seam;
@@ -918,18 +988,36 @@ export class Renderer {
     ctx.restore();
   }
 
-  // Tutorial: a ghost thumb tracing a suggested route.
+  // Tutorial: a ghost thumb tracing a suggested route. Points may carry a hold
+  // time ([x, y, seconds]) to demonstrate waiting.
   drawDemo(ctx, pts, t) {
-    const P = pts.map(([x, y]) => [x + 0.5, y + 0.5]);
+    const P = pts.map(([x, y, h]) => [x + 0.5, y + 0.5, h || 0]);
+    const SPD = 3.2, PRESS = 0.5;
+    // timeline of segments
+    let total = PRESS;
     const segs = [];
-    let total = 0;
-    for (let i = 1; i < P.length; i++) { const d = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); segs.push(d); total += d; }
-    const cycle = total / 3.2 + 2.2;
-    const u = (t % cycle);
-    const press = 0.5;
-    const along = clamp((u - press) * 3.2, 0, total);
+    for (let i = 1; i < P.length; i++) {
+      const d = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]);
+      segs.push({ i, t0: total, t1: total + d / SPD, hold: P[i][2] });
+      total += d / SPD + P[i][2];
+    }
+    const cycle = total + 1.6;
+    const u = t % cycle;
     const fade = u > cycle - 0.7 ? (cycle - u) / 0.7 : 1;
-    let rem = along, hx = P[0][0], hy = P[0][1], k = 0;
+    let hx = P[0][0], hy = P[0][1], holding = 0, holdLen = 0, last = 0;
+    for (const sg of segs) {
+      if (u < sg.t0) break;
+      last = sg.i;
+      const a = P[sg.i - 1], b = P[sg.i];
+      if (u < sg.t1) {
+        const f = (u - sg.t0) / (sg.t1 - sg.t0);
+        hx = a[0] + (b[0] - a[0]) * f; hy = a[1] + (b[1] - a[1]) * f;
+        last = sg.i - 1;
+        break;
+      }
+      hx = b[0]; hy = b[1];
+      if (u < sg.t1 + sg.hold) { holding = u - sg.t1; holdLen = sg.hold; }
+    }
     ctx.save();
     ctx.globalAlpha = 0.55 * fade;
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -938,31 +1026,25 @@ export class Renderer {
     ctx.lineWidth = 0.09;
     ctx.beginPath();
     ctx.moveTo(P[0][0], P[0][1]);
-    for (k = 0; k < segs.length; k++) {
-      if (rem <= segs[k]) {
-        const f = segs[k] > 0 ? rem / segs[k] : 0;
-        hx = P[k][0] + (P[k + 1][0] - P[k][0]) * f;
-        hy = P[k][1] + (P[k + 1][1] - P[k][1]) * f;
-        ctx.lineTo(hx, hy);
-        break;
-      }
-      rem -= segs[k];
-      ctx.lineTo(P[k + 1][0], P[k + 1][1]);
-      hx = P[k + 1][0]; hy = P[k + 1][1];
-    }
+    for (let i = 1; i <= last; i++) ctx.lineTo(P[i][0], P[i][1]);
+    ctx.lineTo(hx, hy);
     ctx.stroke();
     ctx.setLineDash([]);
-    // fingertip
-    const down = u > press * 0.6;
     ctx.globalAlpha = 0.85 * fade;
     ctx.fillStyle = 'rgba(244,238,226,0.28)';
-    ctx.beginPath(); ctx.arc(hx, hy, down ? 0.42 : 0.5, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(hx, hy, u > PRESS * 0.6 ? 0.42 : 0.5, 0, TAU); ctx.fill();
     ctx.strokeStyle = '#f4eee2';
     ctx.lineWidth = 0.05;
     ctx.stroke();
-    if (u < press) {
-      ctx.globalAlpha = (1 - u / press) * 0.8;
-      ctx.beginPath(); ctx.arc(hx, hy, 0.5 + (u / press) * 0.6, 0, TAU); ctx.stroke();
+    if (u < PRESS) {
+      ctx.globalAlpha = (1 - u / PRESS) * 0.8;
+      ctx.beginPath(); ctx.arc(hx, hy, 0.5 + (u / PRESS) * 0.6, 0, TAU); ctx.stroke();
+    }
+    if (holdLen > 0) {
+      ctx.globalAlpha = fade;
+      ctx.strokeStyle = '#f4c24f';
+      ctx.lineWidth = 0.07;
+      ctx.beginPath(); ctx.arc(hx, hy, 0.62, -Math.PI / 2, -Math.PI / 2 + TAU * (holding / holdLen)); ctx.stroke();
     }
     ctx.restore();
   }
@@ -1124,12 +1206,13 @@ export class Renderer {
         if (e.type !== 'noise') continue;
         const age = t - e.t;
         if (age < 0 || age > 1.4) continue;
+        const reach = this.hearReach;
         for (let k = 0; k < 3; k++) {
           const u = (age - k * 0.18) / 0.9;
           if (u < 0 || u > 1) continue;
           ctx.strokeStyle = `rgba(255,190,110,${(1 - u) * 0.8})`;
           ctx.lineWidth = 0.06;
-          ctx.beginPath(); ctx.arc(e.x, e.y, 0.3 + u * 4.2, 0, TAU); ctx.stroke();
+          ctx.beginPath(); ctx.arc(e.x, e.y, 0.3 + u * (reach - 0.3), 0, TAU); ctx.stroke();
         }
       }
     }
@@ -1207,15 +1290,6 @@ export class Renderer {
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, this.cw, this.ch);
     }
-    // vignette
-    if (!this.vig || this.vigW !== this.cw || this.vigH !== this.ch) {
-      this.vigW = this.cw; this.vigH = this.ch;
-      this.vig = ctx.createRadialGradient(this.cw / 2, this.ch * 0.48, Math.min(this.cw, this.ch) * 0.45, this.cw / 2, this.ch * 0.48, Math.hypot(this.cw, this.ch) * 0.62);
-      this.vig.addColorStop(0, 'rgba(0,0,0,0)');
-      this.vig.addColorStop(1, 'rgba(0,0,0,0.5)');
-    }
-    ctx.fillStyle = this.vig;
-    ctx.fillRect(0, 0, this.cw, this.ch);
     if (fx && fx.flashA > 0) {
       ctx.fillStyle = `rgba(${fx.flashColor},${fx.flashA})`;
       ctx.fillRect(0, 0, this.cw, this.ch);

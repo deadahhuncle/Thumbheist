@@ -14,8 +14,10 @@ export const CHAPTERS = [
     levels: [
       {
         id: '1-1',
+        par: 14.5,
         title: 'Opening Night',
         brief: 'Nobody’s home. Grab the painting, walk out the side door.',
+        hint: 'Press on the thief, draw up to the painting, then back down to the glowing exit before you lift.',
         loot: { name: 'Portrait of a Cat in a Ruff', value: 120, kind: 'cat' },
         intro: {
           kicker: 'How it works',
@@ -49,6 +51,7 @@ export const CHAPTERS = [
       },
       {
         id: '1-2',
+        par: 15.5,
         title: 'Watchful Eye',
         brief: 'One camera, staring at the middle of the room. It can’t see the walls.',
         hint: 'Hug the side walls. The coin sits just outside the light.',
@@ -84,6 +87,7 @@ export const CHAPTERS = [
       },
       {
         id: '1-3',
+        par: 12,
         title: 'Sweep',
         brief: 'This camera turns. While your thumb is down, you see where it will be when you get there.',
         hint: 'Wait below the doorway with your thumb held still. Go as soon as the light swings up.',
@@ -98,6 +102,7 @@ export const CHAPTERS = [
           ],
         },
         tutorial: { drawing: 'The room shows the moment you reach your fingertip. Hold still to wait.' },
+        demo: [[2, 11], [2, 8], [4, 7, 1.6], [4, 5], [6, 3], [7, 3]],
         map: [
           '          ',
           ' ######## ',
@@ -120,6 +125,7 @@ export const CHAPTERS = [
       },
       {
         id: '1-4',
+        par: 21.5,
         title: 'Crossfire',
         brief: 'Two cameras sweep the long hall. They’re almost in step. Almost.',
         hint: 'Wait in the lower room for both cameras to look away, then cross in one go.',
@@ -149,6 +155,7 @@ export const CHAPTERS = [
       },
       {
         id: '1-5',
+        par: 21,
         title: 'Glass House',
         brief: 'Display cases block your way but not the camera’s view. Statues hide you.',
         hint: 'Rest in the shadow behind each statue while the camera sweeps past.',
@@ -184,6 +191,7 @@ export const CHAPTERS = [
       },
       {
         id: '1-6',
+        par: 25,
         title: 'The Curator’s Pride',
         brief: 'Two sapphires, two wings, three cameras. The curator is very proud of them.',
         hint: 'Take the left wing first. The top camera rests on each side for a moment.',
@@ -225,6 +233,7 @@ export const CHAPTERS = [
     levels: [
       {
         id: '2-1',
+        par: 16,
         title: 'Rounds',
         brief: 'One guard, one hallway, the same walk all night. Cross behind his back.',
         hint: 'Wait at a doorway until he walks away from it, then cross behind him.',
@@ -260,6 +269,7 @@ export const CHAPTERS = [
       },
       {
         id: '2-2',
+        par: 21.5,
         title: 'Merry-Go-Round',
         brief: 'He walks the loop clockwise, forever. The deposit box sits at the top.',
         hint: 'Enter the loop just after he passes, and follow him at a distance.',
@@ -286,6 +296,7 @@ export const CHAPTERS = [
       },
       {
         id: '2-3',
+        par: 18.5,
         title: 'Crossing Paths',
         brief: 'Two guards circle two pillars. Their routes cross in the middle.',
         hint: 'Stay behind the upper guard as he rounds his pillar, then slip to the left wall.',
@@ -315,6 +326,7 @@ export const CHAPTERS = [
       },
       {
         id: '2-4',
+        par: 16,
         title: 'The Sentry',
         brief: 'This one doesn’t walk. He stands in the middle and turns, like clockwork.',
         hint: 'Watch his turns while holding still. Pass behind him while he looks the other way.',
@@ -341,6 +353,7 @@ export const CHAPTERS = [
       },
       {
         id: '2-5',
+        par: 27.5,
         title: 'Night Shift',
         brief: 'A guard circles the hall. A camera watches the tellers’ room. Mind both.',
         hint: 'Let the guard pass the top doorway, then hurry up the left side.',
@@ -368,6 +381,7 @@ export const CHAPTERS = [
       },
       {
         id: '2-6',
+        par: 21.5,
         title: 'The Lobby',
         brief: 'Two guards on the lobby floor and a camera over the vault door. Busy night.',
         hint: 'The two guards meet in the middle. Cross just after they part.',
@@ -409,6 +423,7 @@ export const CHAPTERS = [
     levels: [
       {
         id: '3-1',
+        par: 18.5,
         title: 'Tripwire',
         brief: 'The beams blink on and off. Wait between them.',
         hint: 'Pause in the gap between each pair of beams until the next one blinks off.',
@@ -449,6 +464,7 @@ export const CHAPTERS = [
       },
       {
         id: '3-2',
+        par: 30.5,
         title: 'Rhythm Section',
         brief: 'Some beams never switch off. The ones that do keep a beat.',
         hint: 'Zigzag through the gaps in the solid beams and wait for the blinking one.',
@@ -484,6 +500,7 @@ export const CHAPTERS = [
       },
       {
         id: '3-3',
+        par: 29.5,
         title: 'Access Denied',
         brief: 'The vault door wants a blue keycard. The keycard is in the room below.',
         hint: 'Card first. Then wait by the blinking beam and slip past the camera to the blue door.',
@@ -520,6 +537,7 @@ export const CHAPTERS = [
       },
       {
         id: '3-4',
+        par: 20.5,
         title: 'Security Office',
         brief: 'The night manager keeps the gold card on his desk and walks laps around it.',
         hint: 'Follow the manager’s back around the desk and snatch the card.',
@@ -547,6 +565,7 @@ export const CHAPTERS = [
       },
       {
         id: '3-5',
+        par: 22,
         title: 'Grid Lock',
         brief: 'Blue card opens blue doors, gold opens gold. The lasers don’t care which you hold.',
         hint: 'Blue card first, then the gold card behind the blue door.',
@@ -578,6 +597,7 @@ export const CHAPTERS = [
       },
       {
         id: '3-6',
+        par: 20,
         title: 'The Vault',
         brief: 'Harrow Street’s vault. Guard, camera, lasers and a door that wants its card.',
         hint: 'The guard pauses at each corner. Use those pauses.',
@@ -619,6 +639,7 @@ export const CHAPTERS = [
     levels: [
       {
         id: '4-1',
+        par: 15.5,
         solverNoise: 0,
         title: 'Floorboards',
         brief: 'The butler faces the window upstairs. Step on a loose board and he’ll come to look.',
@@ -655,6 +676,7 @@ export const CHAPTERS = [
       },
       {
         id: '4-2',
+        par: 24,
         solverNoise: 1,
         title: 'Distraction',
         brief: 'He guards the study door and won’t budge. Unless he hears something.',
@@ -682,10 +704,11 @@ export const CHAPTERS = [
       },
       {
         id: '4-3',
+        par: 13.5,
         solverNoise: 1,
         title: 'Double Act',
         brief: 'Two footmen guard two doors. The one on the left is deaf as a post.',
-        hint: 'Creak the board downstairs, hide behind a plant, then take the right-hand door while he’s gone.',
+        hint: 'Creak the board downstairs, step aside, then take the right-hand door while he’s gone.',
         loot: { name: 'Lady Ashgrove’s Pearls', value: 320, kind: 'necklace' },
         map: [
           '##########',
@@ -712,10 +735,11 @@ export const CHAPTERS = [
       },
       {
         id: '4-4',
+        par: 16,
         solverNoise: 1,
         title: 'The Study',
         brief: 'The librarian watches the laser fence like a hawk. He does have excellent hearing.',
-        hint: 'Creak the board in the lower room, hide behind the plant, then cross the beams while he’s gone.',
+        hint: 'Creak the board in the lower room, tuck in behind a bookcase, then cross the beams while he’s gone.',
         loot: { name: 'First Folio', value: 380, kind: 'scroll' },
         map: [
           '##########',
@@ -746,27 +770,27 @@ export const CHAPTERS = [
         solverNoise: 2,
         title: 'Cat and Mouse',
         brief: 'One guard at the jewel room door. Draw him out to get in. Draw him in to get out.',
-        hint: 'Creak the lower board and hide to get in. Inside, creak the second board, wait in the far corner, and slip out behind him.',
+        hint: 'Creak the board by the right door and run up the left side. Inside, creak the second board, wait by the loot and slip out behind him.',
         loot: { name: 'The Ashgrove Emerald Idol', value: 420, kind: 'idol' },
         map: [
           '##########',
           '#$.......#',
-          '#......~.#',
+          '#gggg..~.#',
           '#........#',
           '####.#####',
           '#........#',
           '#........#',
           '#........#',
           '#........#',
-          '####..####',
+          '#.######.#',
+          '#.......~#',
           '#........#',
-          '#.B......#',
-          '#......~.#',
+          '#........#',
           '#c.......#',
           '#T......E#',
           '##########',
         ],
-        guards: [{ path: [[4, 6]], face: 270, hear: 7, range: 3.6 }],
+        guards: [{ path: [[4, 7]], face: 270, hear: 7, range: 3.6 }],
       },
       {
         id: '4-6',
@@ -779,7 +803,7 @@ export const CHAPTERS = [
           '##########',
           '#$.....g.#',
           '#........#',
-          '#.g......#',
+          '#.g.....c#',
           '#####.####',
           '#........#',
           '#..~..~..#',
@@ -797,7 +821,7 @@ export const CHAPTERS = [
           { path: [[5, 6]], face: 270, hear: 7, range: 3.6 },
           { path: [[1, 9], [1, 12], [8, 12], [8, 9]], loop: true, speed: 1.3, hear: 3 },
         ],
-        cameras: [{ at: [9.0, 2.0], dir: 170, sweep: 50, period: 5, range: 6, fov: 34 }],
+        cameras: [{ at: [9.0, 1.5], dir: 150, sweep: 40, period: 5, range: 4.2, fov: 34 }],
       },
     ],
   },
@@ -812,6 +836,7 @@ export const CHAPTERS = [
     levels: [
       {
         id: '5-1',
+        par: 10.5,
         title: 'Blackout',
         brief: 'Three cameras cover the hall. Flip the fuse and they’re blind for five seconds.',
         hint: 'Hit the fuse box and sprint straight through the hall. Leave by the window.',
@@ -852,6 +877,7 @@ export const CHAPTERS = [
       },
       {
         id: '5-2',
+        par: 14,
         title: 'Short Circuit',
         brief: 'The beams around the vault never blink. The fuse box is past the guard.',
         hint: 'Reach the fuse box behind the guard, then run for the beams before they return.',
@@ -883,9 +909,10 @@ export const CHAPTERS = [
       },
       {
         id: '5-3',
+        par: 22.5,
         title: 'Penthouse Party',
         brief: 'Guests gone, staff tidying up. The cameras sleep when the power does. The staff don’t.',
-        hint: 'Blackout first, then slip behind the waiter while he clears the far table.',
+        hint: 'Blackout first, then slip behind the steward while he walks the far side of the room.',
         loot: { name: 'Diamond Choker', value: 480, kind: 'necklace' },
         powerDuration: 6,
         map: [
@@ -914,6 +941,7 @@ export const CHAPTERS = [
       },
       {
         id: '5-4',
+        par: 23.5,
         title: 'Skybridge',
         brief: 'A glass bridge between towers. Nowhere to hide, and the beams keep a brisk beat.',
         hint: 'Cross in the gaps: short dash, wait, short dash.',
@@ -943,20 +971,20 @@ export const CHAPTERS = [
           { a: [4, 7], b: [6, 7], on: 1.2, off: 1.0, phase: 1.1 },
           { a: [4, 5.5], b: [6, 5.5], on: 1.2, off: 1.0, phase: 1.65 },
         ],
-        cameras: [{ at: [5.0, 3.0], dir: 90, sweep: 40, period: 3, range: 4, fov: 30 }],
+        cameras: [{ at: [4.0, 3.3], dir: 80, sweep: 36, period: 3, range: 4.2, fov: 30 }],
         guards: [{ path: [[1, 2], [8, 2]], speed: 1.2, wait: 1 }],
       },
       {
         id: '5-5',
         solverNoise: 1,
         title: 'The Long Dark',
-        brief: 'Blackout, loose tiles and a guard who hears everything. Make the dark count.',
-        hint: 'Creak the tile to send him down, then blackout and run the beams.',
+        brief: 'The beam across the vault never blinks. Five seconds of dark is all you get. Leave by the roof.',
+        hint: 'Creak the loose tile to pull the guard right, then hit the fuse and sprint up the left for the roof.',
         loot: { name: 'The Meridian Orb', value: 560, kind: 'egg' },
         powerDuration: 5,
         map: [
           '##########',
-          '#$.......#',
+          '#$......E#',
           '#........#',
           '#........#',
           '#####.####',
@@ -969,7 +997,7 @@ export const CHAPTERS = [
           '#.B...B..#',
           '#P......c#',
           '#........#',
-          '#T......E#',
+          '#T.......#',
           '##########',
         ],
         guards: [{ path: [[2, 6], [7, 6]], speed: 1.2, wait: 1, hear: 6 }],
@@ -978,12 +1006,13 @@ export const CHAPTERS = [
       },
       {
         id: '5-6',
-        solverNoise: 1,
+        par: 19.5,
+        solverNoise: 0,
         title: 'The Crown Jewels',
-        brief: 'The Imperial State Crown, on loan for one night only. Everything they have is guarding it.',
-        hint: 'Key, fuse, then the crown. The guard up top pauses at each end.',
-        loot: { name: 'The Imperial Crown', value: 1500, kind: 'crown' },
-        powerDuration: 6,
+        brief: 'The Sovereign Crown, on loan for one night only. Everything they have is guarding it.',
+        hint: 'Keycard on the right, fuse box on the left. The blackout gives you five seconds to reach and cross the beam.',
+        loot: { name: 'The Sovereign Crown', value: 1500, kind: 'crown' },
+        powerDuration: 5,
         intro: {
           kicker: 'Final job',
           title: 'The Crown Jewels',
@@ -995,31 +1024,31 @@ export const CHAPTERS = [
         },
         map: [
           '##########',
-          '#...$....#',
-          '#........#',
+          '#...$...E#',
           '#.g....g.#',
+          '#........#',
           '####DD####',
           '#........#',
           '#.B....B.#',
           '#........#',
-          '#.......P#',
+          '#P.....~.#',
           '###.##.###',
-          '#k.......#',
-          '#....~...#',
+          '#........#',
+          '#...~...k#',
           '#c......c#',
           '###..#####',
-          '#T.....E.#',
+          '#T.......#',
           '##########',
         ],
         guards: [
-          { path: [[1, 5], [8, 5]], speed: 1.3, wait: 1 },
-          { path: [[2, 11], [7, 11]], speed: 1.1, wait: 0.8 },
+          { path: [[2, 5], [7, 5], [7, 7], [2, 7]], loop: true, speed: 1.2, wait: 0.4 },
+          { path: [[2, 10], [7, 10]], speed: 1.1, wait: 0.8, offset: 2 },
         ],
         cameras: [
-          { at: [1.0, 7.5], dir: 0, sweep: 60, period: 5, range: 7, fov: 36 },
-          { at: [5.0, 1.0], dir: 90, sweep: 120, period: 5, range: 3.5, fov: 40 },
+          { at: [9.0, 6.0], dir: 180, sweep: 60, period: 5, range: 6, fov: 34 },
+          { at: [1.0, 1.5], dir: 20, sweep: 50, period: 4, range: 4.5, fov: 36 },
         ],
-        lasers: [{ a: [1, 3.5], b: [9, 3.5] }],
+        lasers: [{ a: [1, 3], b: [9, 3] }],
       },
     ],
   },
