@@ -819,7 +819,7 @@ export const CHAPTERS = [
         ],
         guards: [
           { path: [[5, 6]], face: 270, hear: 7, range: 3.6 },
-          { path: [[1, 7], [8, 7]], speed: 1.2, wait: 0.8, hear: 3 },
+          { path: [[1, 7], [8, 7]], speed: 1.0, wait: 1.4, hear: 3 },
         ],
         cameras: [{ at: [9.0, 2.5], dir: 165, sweep: 40, period: 5, range: 4.5, fov: 34 }],
       },
