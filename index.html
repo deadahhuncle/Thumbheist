@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One Thumb Heist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="Draw one continuous route with your thumb. Lift, and watch the heist play out. 30 hand-made jobs.">
+<meta name="theme-color" content="#0b0d1a">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Thumb Heist">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/barlow-sc-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="bg" aria-hidden="true"></canvas>
+
+  <!-- ============================== TITLE -->
+  <section id="title" class="screen" aria-label="Title">
+    <div class="title-wrap">
+      <div class="logo" aria-label="One Thumb Heist">
+        <canvas id="print" width="220" height="220" aria-hidden="true"></canvas>
+        <div class="logo-type">
+          <span class="logo-one">One&nbsp;Thumb</span>
+          <span class="logo-heist">Heist</span>
+        </div>
+      </div>
+      <p class="tagline">One line. One lift. No second chances.</p>
+    </div>
+    <div class="title-actions">
+      <button id="btn-play" class="btn btn-primary btn-xl" type="button">
+        <span class="btn-label">Start the job</span>
+        <span class="btn-sub" id="play-sub">Case 1 · Job 1</span>
+      </button>
+      <div class="row">
+        <button id="btn-cases" class="btn btn-ghost" type="button">Case files</button>
+        <button id="btn-settings" class="btn btn-ghost" type="button">Settings</button>
+      </div>
+    </div>
+    <footer class="title-foot">
+      <div class="haul"><span class="haul-label">Total haul</span><span class="haul-value" id="haul">$0</span></div>
+      <div class="haul"><span class="haul-label">Stars</span><span class="haul-value" id="stars-total">0 / 90</span></div>
+    </footer>
+    <p class="install-hint" id="install-hint" hidden></p>
+  </section>
+
+  <!-- ============================== CASES -->
+  <section id="cases" class="screen" aria-label="Case files">
+    <header class="bar">
+      <button class="icon-btn" data-back="title" type="button" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 class="bar-title">Case files</h1>
+      <span class="bar-meta" id="cases-stars"></span>
+    </header>
+    <div class="scroll" id="case-list"></div>
+  </section>
+
+  <!-- ============================== JOBS -->
+  <section id="jobs" class="screen" aria-label="Jobs">
+    <header class="bar">
+      <button class="icon-btn" data-back="cases" type="button" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="bar-title-group">
+        <span class="bar-kicker" id="jobs-kicker">Case 01</span>
+        <h1 class="bar-title" id="jobs-title">The Gallery</h1>
+      </div>
+      <span class="bar-meta" id="jobs-stars"></span>
+    </header>
+    <div class="scroll">
+      <p class="case-blurb" id="jobs-blurb"></p>
+      <div class="job-grid" id="job-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============================== GAME -->
+  <section id="game" class="screen" aria-label="Heist">
+    <canvas id="board"></canvas>
+    <header class="hud">
+      <button class="icon-btn" id="btn-pause" type="button" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg></button>
+      <div class="hud-title">
+        <span class="hud-id" id="hud-id">1-1</span>
+        <span class="hud-name" id="hud-name">Opening Night</span>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chip-loot" title="Loot"><i class="ic ic-loot"></i><b id="chip-loot-v">0/1</b></span>
+        <span class="chip" id="chip-coins" title="Coins"><i class="ic ic-coin"></i><b id="chip-coins-v">0/1</b></span>
+        <span class="chip" id="chip-time" title="Par time"><i class="ic ic-clock"></i><b id="chip-time-v">12.0</b></span>
+      </div>
+    </header>
+    <div class="ff" id="ff" hidden>▶▶ 3×</div>
+    <div class="level-card" id="level-card" aria-hidden="true">
+      <span class="level-card-kicker" id="lc-kicker">Case 1 · Job 1</span>
+      <span class="level-card-title" id="lc-title">Opening Night</span>
+    </div>
+    <footer class="tipbar"><p id="tip" class="tip"></p></footer>
+  </section>
+
+  <!-- ============================== SHEETS -->
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="sheet" id="sheet-pause" role="dialog" aria-modal="true" aria-labelledby="pause-h" hidden>
+    <h2 id="pause-h" class="sheet-title">Paused</h2>
+    <p class="sheet-note" id="pause-brief"></p>
+    <div class="stack">
+      <button class="btn btn-primary" id="btn-resume" type="button">Resume</button>
+      <button class="btn" id="btn-restart" type="button">Restart job</button>
+      <button class="btn" id="btn-tojobs" type="button">Case file</button>
+    </div>
+    <div class="toggles">
+      <button class="toggle" data-setting="sfx" type="button"><span>Sound</span><i></i></button>
+      <button class="toggle" data-setting="music" type="button"><span>Music</span><i></i></button>
+      <button class="toggle" data-setting="haptics" type="button"><span>Vibration</span><i></i></button>
+    </div>
+  </div>
+
+  <div class="sheet sheet-result" id="sheet-result" role="dialog" aria-modal="true" aria-labelledby="result-h" hidden>
+    <canvas class="result-art" id="result-art" width="120" height="96" aria-hidden="true"></canvas>
+    <div class="stamp" id="result-stamp">Clean getaway</div>
+    <h2 id="result-h" class="sheet-title" hidden>Result</h2>
+    <p class="result-loot" id="result-loot"></p>
+    <div class="stars-row" id="stars-row">
+      <div class="star-slot"><div class="star"></div><span class="star-label" id="star-l1">Escaped</span></div>
+      <div class="star-slot"><div class="star"></div><span class="star-label" id="star-l2">All coins</span></div>
+      <div class="star-slot"><div class="star"></div><span class="star-label" id="star-l3">Par</span></div>
+    </div>
+    <p class="result-note" id="result-note"></p>
+    <div class="stack">
+      <button class="btn btn-primary" id="btn-next" type="button">Next job</button>
+      <div class="row">
+        <button class="btn" id="btn-retry" type="button">Retry</button>
+        <button class="btn" id="btn-result-jobs" type="button">Case file</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet-settings" role="dialog" aria-modal="true" aria-labelledby="settings-h" hidden>
+    <h2 id="settings-h" class="sheet-title">Settings</h2>
+    <div class="toggles">
+      <button class="toggle" data-setting="sfx" type="button"><span>Sound effects</span><i></i></button>
+      <button class="toggle" data-setting="music" type="button"><span>Music</span><i></i></button>
+      <button class="toggle" data-setting="haptics" type="button"><span>Vibration</span><i></i></button>
+    </div>
+    <div class="stack">
+      <button class="btn" id="btn-howto" type="button">How to play</button>
+      <button class="btn" id="btn-credits" type="button">Credits</button>
+      <button class="btn btn-danger" id="btn-reset" type="button">Erase progress</button>
+      <button class="btn btn-primary" data-close type="button">Done</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet-confirm" role="dialog" aria-modal="true" aria-labelledby="confirm-h" hidden>
+    <h2 id="confirm-h" class="sheet-title">Erase all progress?</h2>
+    <p class="sheet-note">Every star, best time and unlocked case will be wiped. Your settings stay.</p>
+    <div class="stack">
+      <button class="btn btn-danger" id="btn-reset-yes" type="button">Erase everything</button>
+      <button class="btn" data-close type="button">Keep my progress</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet-credits" role="dialog" aria-modal="true" aria-labelledby="credits-h" hidden>
+    <h2 id="credits-h" class="sheet-title">Credits</h2>
+    <div class="credits">
+      <p><b>One Thumb Heist</b><br>Design, code, art, music and sound, all made in the browser.</p>
+      <p>Everything you see is drawn live on a canvas, and everything you hear is synthesised on the fly. No image or audio files.</p>
+      <p>Type: Big Shoulders Display (Patric King), Barlow Semi Condensed (Jeremy Tribby) and Special Elite (Astigmatic), used under their open font licenses.</p>
+    </div>
+    <div class="stack"><button class="btn btn-primary" data-close type="button">Back</button></div>
+  </div>
+
+  <div class="card-overlay" id="briefing" role="dialog" aria-modal="true" aria-labelledby="brief-h" hidden>
+    <div class="case-card">
+      <span class="case-card-kicker" id="brief-kicker">New trick</span>
+      <h2 class="case-card-title" id="brief-h">Title</h2>
+      <canvas class="case-card-art" id="brief-art" width="280" height="150" aria-hidden="true"></canvas>
+      <div class="case-card-text" id="brief-text"></div>
+      <button class="btn btn-primary" id="brief-go" type="button">Got it</button>
+    </div>
+  </div>
+
+  <div class="rotate" id="rotate" hidden>
+    <div><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><p>Turn your phone upright to play.</p></div>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

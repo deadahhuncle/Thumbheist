@@ -1,0 +1,42 @@
+// Screenshot the menu flow. node tests/ui.mjs <outdir>
+import { chromium, devices } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+const [,, out] = process.argv;
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ ...devices['iPhone 13'] });
+const page = await ctx.newPage();
+const logs = [];
+page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(`[${m.type()}] ${m.text()}`); });
+page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
+await page.goto('http://localhost:8123/');
+await page.waitForTimeout(800);
+// seed some progress so screens show state
+await page.evaluate(() => {
+  const s = window.__oth.save;
+  ['1-1', '1-2', '1-3', '1-4', '1-5', '1-6', '2-1', '2-2'].forEach((id, i) => s.record(id, { stars: [3, 2, 3, 1, 2, 3, 2, 1][i], time: 10 + i, coins: 1 }));
+  window.__oth.show('title');
+});
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/ui-title.png` });
+await page.click('#btn-cases');
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}/ui-cases.png` });
+await page.evaluate(() => window.__oth.openJobs(1));
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}/ui-jobs.png` });
+await page.evaluate(() => window.__oth.startLevel('3-1'));
+await page.waitForTimeout(900);
+await page.screenshot({ path: `${out}/ui-brief.png` });
+await page.click('#brief-go');
+await page.waitForTimeout(500);
+await page.click('#btn-pause');
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}/ui-pause.png` });
+await page.click('#btn-tojobs');
+await page.waitForTimeout(300);
+await page.evaluate(() => window.__oth.show('title'));
+await page.waitForTimeout(400);
+await page.click('#btn-settings');
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${out}/ui-settings.png` });
+console.log(logs.join('\n') || 'no errors');
+await browser.close();

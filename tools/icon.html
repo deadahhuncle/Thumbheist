@@ -1,0 +1,49 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<canvas id="c"></canvas>
+<script>
+// Renders the app icon. ?size=512&mask=1
+const q = new URLSearchParams(location.search);
+const S = +(q.get('size') || 512), mask = q.get('mask') === '1';
+const c = document.getElementById('c'); c.width = S; c.height = S;
+const x = c.getContext('2d');
+const TAU = Math.PI * 2;
+function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6d2b79f5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+const g = x.createRadialGradient(S*0.5, S*0.42, S*0.05, S*0.5, S*0.5, S*0.75);
+g.addColorStop(0, '#1d2350'); g.addColorStop(1, '#0a0c19');
+x.fillStyle = g; x.fillRect(0, 0, S, S);
+const scale = mask ? 0.72 : 0.9;
+x.translate(S/2, S/2); x.scale(S*scale/220, S*scale/220); x.translate(-110, -110);
+// thumbprint
+const R = rng(42), cx = 110, cy = 114;
+x.lineCap = 'round';
+for (let k = 0; k < 14; k++) {
+  const r = 7 + k * 6.6;
+  x.strokeStyle = `rgba(244,194,79,${Math.max(0.35, 0.95 - k * 0.04)})`;
+  x.lineWidth = 3.4;
+  const gapAt = R() * TAU, gapLen = 0.25 + R() * 0.45, gap2 = R() * TAU;
+  x.beginPath(); let pen = false;
+  for (let i = 0; i <= 160; i++) {
+    const th = (i / 160) * TAU;
+    const d1 = ((th - gapAt) % TAU + TAU) % TAU, d2 = ((th - gap2) % TAU + TAU) % TAU;
+    const inGap = d1 < gapLen || (k > 6 && d2 < 0.18);
+    const wob = 1 + 0.05 * Math.sin(th * 3 + k * 0.7) + 0.03 * Math.sin(th * 5 - k);
+    const px = cx + Math.cos(th) * r * 0.82 * wob, py = cy + Math.sin(th) * r * 1.05 * wob - (1 - Math.cos(th)) * k * 0.3;
+    if (inGap) { pen = false; continue; }
+    if (!pen) { x.moveTo(px, py); pen = true; } else x.lineTo(px, py);
+  }
+  x.stroke();
+}
+// the one line: a chalk route sweeping through the print
+x.strokeStyle = 'rgba(8,10,20,0.75)'; x.lineWidth = 15;
+const route = () => { x.beginPath(); x.moveTo(26, 190); x.bezierCurveTo(70, 150, 60, 110, 108, 104); x.bezierCurveTo(150, 98, 150, 60, 188, 36); };
+route(); x.stroke();
+x.strokeStyle = '#f4eee2'; x.lineWidth = 8; route(); x.stroke();
+x.fillStyle = '#f4eee2'; x.beginPath(); x.arc(26, 190, 10, 0, TAU); x.fill();
+// gem at the end
+x.save(); x.translate(190, 34); x.scale(1.3, 1.3);
+x.fillStyle = '#bff3ff'; x.beginPath(); x.moveTo(-14,-4); x.lineTo(-7,-12); x.lineTo(7,-12); x.lineTo(14,-4); x.lineTo(0,14); x.closePath(); x.fill();
+x.fillStyle = '#6fd6f2'; x.beginPath(); x.moveTo(-14,-4); x.lineTo(14,-4); x.lineTo(0,14); x.closePath(); x.fill();
+x.fillStyle = '#3aaed8'; x.beginPath(); x.moveTo(-5,-4); x.lineTo(5,-4); x.lineTo(0,14); x.closePath(); x.fill();
+x.restore();
+document.title = 'ready';
+</script></body></html>
