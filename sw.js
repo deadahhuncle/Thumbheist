@@ -1,5 +1,5 @@
 // Offline support: precache the whole game, serve cache-first, refresh in the background.
-const VERSION = 'oth-v1';
+const VERSION = 'oth-v2';
 const FILES = [
   './',
   './index.html',
