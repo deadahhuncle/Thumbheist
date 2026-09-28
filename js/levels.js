@@ -767,6 +767,7 @@ export const CHAPTERS = [
       },
       {
         id: '4-5',
+        par: 30.5,
         solverNoise: 2,
         title: 'Cat and Mouse',
         brief: 'One guard at the jewel room door. Draw him out to get in. Draw him in to get out.',
@@ -794,6 +795,7 @@ export const CHAPTERS = [
       },
       {
         id: '4-6',
+        par: 28,
         solverNoise: 1,
         title: 'The Master Suite',
         brief: 'His Lordship’s bedroom. A footman at the door, a camera on the landing, loose boards everywhere.',
@@ -977,6 +979,7 @@ export const CHAPTERS = [
       },
       {
         id: '5-5',
+        par: 14,
         solverNoise: 0,
         title: 'The Long Dark',
         brief: 'The beam across the vault never blinks. A few seconds of dark is all you get. Leave by the roof.',
@@ -1007,7 +1010,7 @@ export const CHAPTERS = [
       },
       {
         id: '5-6',
-        par: 19.5,
+        par: 19,
         solverNoise: 0,
         title: 'The Crown Jewels',
         brief: 'The Sovereign Crown, on loan for one night only. Everything they have is guarding it.',
