@@ -12,6 +12,7 @@ for (const [ci, ch] of CHAPTERS.entries()) for (const [li, def] of ch.levels.ent
   if (!sol) { console.log(def.id, 'no solution'); continue; }
   const L = parseLevel(def, { chapter: ci, index: li, theme: ch.theme });
   for (const k of ['any', 'all']) {
+    if (!sol[k]) { console.log(def.id, k, 'none'); continue; }
     const plan = Plan.fromPoints(sol[k]);
     const sim = new Sim(L, plan);
     sim.advanceTo(plan.end + 0.5);
