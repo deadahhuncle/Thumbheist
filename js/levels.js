@@ -977,12 +977,12 @@ export const CHAPTERS = [
       },
       {
         id: '5-5',
-        solverNoise: 1,
+        solverNoise: 0,
         title: 'The Long Dark',
-        brief: 'The beam across the vault never blinks. Five seconds of dark is all you get. Leave by the roof.',
-        hint: 'Creak the loose tile to pull the guard right, then hit the fuse and sprint up the left for the roof.',
+        brief: 'The beam across the vault never blinks. A few seconds of dark is all you get. Leave by the roof.',
+        hint: 'Wait for the guard to turn away, hit the fuse and sprint straight up for the roof. Mind the loose tile.',
         loot: { name: 'The Meridian Orb', value: 560, kind: 'egg' },
-        powerDuration: 5,
+        powerDuration: 6.5,
         map: [
           '##########',
           '#$......E#',
