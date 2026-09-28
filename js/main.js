@@ -69,13 +69,30 @@ function show(id) {
   if (id === 'cases') renderCases();
 }
 
+const allDone = () => LEVELS.every(isDone);
+
 function renderTitle() {
   const nl = nextLevel();
   const any = LEVELS.some(isDone);
-  $('#btn-play .btn-label').textContent = any ? 'Continue' : 'Start the job';
-  $('#play-sub').textContent = `Case ${nl.chapter + 1} · ${nl.title}`;
+  if (allDone()) {
+    const left = TOTAL_STARS - totalStars();
+    $('#btn-play .btn-label').textContent = 'Case files';
+    $('#play-sub').textContent = left ? `Every job done · ${left} star${left > 1 ? 's' : ''} still out there` : 'Every job done · every star taken';
+  } else {
+    $('#btn-play .btn-label').textContent = any ? 'Continue' : 'Start the job';
+    $('#play-sub').textContent = `Case ${nl.chapter + 1} · ${nl.title}`;
+  }
   $('#haul').textContent = money(haul());
   $('#stars-total').textContent = `${totalStars()} / ${TOTAL_STARS}`;
+}
+
+// A locked file rattles in place.
+function denied(el) {
+  audio.play('locked');
+  haptic(10);
+  el.classList.remove('denied');
+  void el.offsetWidth;
+  el.classList.add('denied');
 }
 
 function starGlyphs(n, size = 16) {
@@ -108,7 +125,7 @@ function renderCases() {
     const cv = el.querySelector('canvas');
     drawThumb(cv, lvs[lvs.length - 1], !unlocked);
     el.addEventListener('click', () => {
-      if (!unlocked) { audio.play('locked'); haptic(10); return; }
+      if (!unlocked) { denied(el); return; }
       audio.play('select');
       openJobs(ci);
     });
@@ -141,7 +158,7 @@ function openJobs(ci) {
       <div class="job-best">${rec?.time != null ? `Best ${rec.time.toFixed(1)}s · par ${lv.par.toFixed(1)}s` : unlocked ? `Par ${lv.par.toFixed(1)}s` : '&nbsp;'}</div>`;
     drawThumb(el.querySelector('canvas'), lv, !unlocked);
     el.addEventListener('click', () => {
-      if (!unlocked) { audio.play('locked'); haptic(10); return; }
+      if (!unlocked) { denied(el); return; }
       audio.play('select');
       startLevel(lv);
     });
@@ -178,7 +195,7 @@ const game = new Game($('#board'), {
     bump(hud.coins, 'coins', h.coins);
     if (h.time != null) {
       hud.timeV.textContent = `${h.time.toFixed(1)}/${h.par.toFixed(1)}`;
-      set(hud.time, h.time > h.par + 1e-6 ? 'warn' : h.state === 'escaped' || (h.projected && h.loot) ? 'ok' : null);
+      set(hud.time, h.danger ? 'bad' : h.time > h.par + 1e-6 ? 'warn' : h.state === 'escaped' || (h.projected && h.loot) ? 'ok' : null);
     } else {
       hud.timeV.textContent = `par ${h.par.toFixed(1)}`;
       set(hud.time, null);
@@ -197,6 +214,8 @@ const game = new Game($('#board'), {
     }, 140);
   },
   haptic,
+  // Save the moment the thief is out, so quitting during the getaway keeps the win.
+  won: (r) => { r.improved = save.record(r.level.id, { stars: r.stars, time: r.time, coins: r.coins }); },
   result: (r) => showResult(r),
 });
 
@@ -204,6 +223,7 @@ let activeLevel = null;
 
 function startLevel(lv, opts = {}) {
   activeLevel = lv;
+  if (lv.index === 0) save.seen('case:' + lv.chapter, true);
   save.data.last = lv.id;
   save.write();
   closeSheets();
@@ -314,9 +334,12 @@ $$('.toggle').forEach((t) => t.addEventListener('click', () => {
 }));
 
 $$('[data-close]').forEach((b) => b.addEventListener('click', () => { audio.play('back'); closeSheets(); }));
+// Credits and the reset prompt live under Settings, so backing out lands there.
+$$('[data-sheet-back]').forEach((b) => b.addEventListener('click', () => { audio.play('back'); openSheet(b.dataset.sheetBack); }));
 $('#scrim').addEventListener('click', () => {
   if ($('#sheet-result').classList.contains('show')) return;
   if ($('#sheet-pause').classList.contains('show')) { resumeGame(); return; }
+  if ($('#sheet-credits').classList.contains('show') || $('#sheet-confirm').classList.contains('show')) { audio.play('back'); openSheet('sheet-settings'); return; }
   closeSheets();
 });
 
@@ -330,7 +353,7 @@ function resumeGame() {
 $('#btn-pause').addEventListener('click', () => {
   audio.unlock();
   audio.play('ui');
-  if (game.state === 'result') return;
+  if (['result', 'escaped', 'caught', 'stranded'].includes(game.state)) return;
   game.pause(true);
   audio.setMood('menu');
   $('#pause-brief').textContent = activeLevel ? `${activeLevel.id} · ${activeLevel.title}` : '';
@@ -361,7 +384,7 @@ function showResult(r) {
   note.className = 'result-note';
   const next = LEVELS[lv.global + 1];
   if (r.success) {
-    const improved = save.record(lv.id, { stars: r.stars, time: r.time, coins: r.coins });
+    const improved = r.improved || save.record(lv.id, { stars: r.stars, time: r.time, coins: r.coins });
     const caseEnd = !next || next.chapter !== lv.chapter;
     stamp.textContent = caseEnd ? 'Case closed' : r.stars === 3 ? 'Flawless' : 'Clean getaway';
     resultArt(lv.loot.kind, true);
@@ -375,6 +398,7 @@ function showResult(r) {
       else audio.play('starMiss');
     }, 420 + i * 260));
     const bits = [];
+    if (caseEnd && r.stars === 3) bits.push('<span class="new">Flawless</span>');
     if (improved.newStars && !improved.first) bits.push('<span class="new">New best stars</span>');
     if (improved.newTime) bits.push('<span class="new">New best time</span>');
     if (!got[1] && !got[2]) bits.push('Grab every coin under par for three stars.');
@@ -432,13 +456,15 @@ function showEnding() {
     ],
     button: 'Back to the hideout',
   };
-  showBriefing(intro, () => show('title'));
+  show('title');
+  showBriefing(intro, () => {});
 }
 
 // ------------------------------------------------------------------ menus
 $('#btn-play').addEventListener('click', () => {
   audio.unlock();
   audio.play('select');
+  if (allDone()) { show('cases'); return; }
   const nl = nextLevel();
   const firstOfCase = nl.index === 0 && !isDone(nl) && nl.chapter > 0;
   if (firstOfCase && !save.seen('case:' + nl.chapter)) {
@@ -463,7 +489,7 @@ $('#btn-howto').addEventListener('click', () => {
       'While your thumb is down, the world shows where everyone will be when the thief reaches your fingertip. Hold still to wait.',
       'Slide back along the line to undo. Lift your thumb and the plan runs. No second chances.',
     ],
-  }, () => {});
+  }, () => openSheet('sheet-settings'));
 });
 $('#btn-reset').addEventListener('click', () => { audio.play('ui'); openSheet('sheet-confirm'); });
 $('#btn-reset-yes').addEventListener('click', () => {
@@ -479,6 +505,7 @@ $$('[data-back]').forEach((b) => b.addEventListener('click', () => {
 }));
 
 // ------------------------------------------------------------------ layout + loop
+const COARSE = matchMedia('(pointer: coarse)');
 function layout() {
   const w = window.innerWidth, h = window.innerHeight;
   const hudEl = document.querySelector('.hud');
@@ -488,7 +515,8 @@ function layout() {
   const side = 6;
   game.resize(w, h, { x: side, y: top, w: w - side * 2, h: h - top - bottom });
   backdrop.resize(w, h);
-  $('#rotate').hidden = !(w > h && h < 500);
+  // Only phones held sideways get the "turn me" card; a short desktop window just plays.
+  $('#rotate').hidden = !(w > h && h < 500 && COARSE.matches);
 }
 window.addEventListener('resize', layout);
 window.addEventListener('orientationchange', () => setTimeout(layout, 200));

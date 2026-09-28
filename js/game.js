@@ -11,8 +11,9 @@ import { FX } from './fx.js';
 import { audio } from './audio.js';
 import { clamp, dist, angLerp } from './geom.js';
 
-const STILL_PX = 4;          // finger jitter tolerance while holding still (CSS px)
-const HOLD_DELAY = 0.3;      // the finger must stay within STILL_PX for this long to count as a hold
+const HOLD_R = 0.45;         // thumb within this many tiles of the line's tip can hold
+const HOLD_DELAY = 0.25;     // seconds of resting before waiting kicks in
+const HOLD_PX = 6;           // a thumb that stays within this many CSS pixels is resting
 const GRAB_TILES = 1.0;      // how close to the thief a plan may start
 const CANCEL_LEN = 0.35;     // lines shorter than this are treated as a cancel
 
@@ -35,7 +36,12 @@ export class Game {
 
   // ------------------------------------------------------------------ lifecycle
   resize(w, h, area) {
+    const { ts, ox, oy } = this.r;
     this.r.resize(w, h, area);
+    // The board moved under the thumb (rotation, split screen): the line in
+    // progress no longer lines up with the finger, so drop it.
+    const moved = Math.abs(this.r.ts - ts) > 0.5 || Math.abs(this.r.ox - ox) > 2 || Math.abs(this.r.oy - oy) > 2;
+    if (moved && this.state === 'drawing') this.cancelDraw('scrap');
   }
 
   load(level) {
@@ -74,6 +80,7 @@ export class Game {
     this.fast = false;
     this.alarm = 0;
     this.resultShown = false;
+    this.outcome = null;
     this.lastTickSec = 0;
     this.previewCaught = false;
     this.previewEscaped = false;
@@ -185,8 +192,8 @@ export class Game {
     this.viewT = this.state === 'idle' || this.state === 'intro' ? this.idleT : 0;
     this.setState('drawing');
     this.anchor = [px, py];
+    this.holdAnchor = [px, py];
     this.still = 0;
-    this.hist = [{ t: this.time, x: px, y: py }];
     this.lastTickSec = 0;
     this.previewCaught = false;
     this.previewEscaped = false;
@@ -203,25 +210,33 @@ export class Game {
   onMove(px, py) {
     if (this.state !== 'drawing') { this.finger = [px, py]; return; }
     this.finger = [px, py];
-    this.hist.push({ t: this.time, x: px, y: py });
-    if (Math.hypot(px - this.anchor[0], py - this.anchor[1]) > STILL_PX) {
-      this.anchor = [px, py];
+    // A thumb that is travelling, however slowly, is not holding.
+    if (Math.hypot(px - this.holdAnchor[0], py - this.holdAnchor[1]) > HOLD_PX) {
+      this.holdAnchor = [px, py];
       this.still = 0;
       this.holding = false;
     }
     const [wx, wy] = this.r.toWorld(px, py);
     const dr = this.drawer;
     const before = dr.plan.n;
+    const waitBefore = dr.plan.totalWait;
     if (dr.retrace(wx, wy)) {
       // erasing: rebuild the preview from scratch
       this.sim = new Sim(this.level, dr.plan);
       this.sim.advanceTo(dr.plan.end);
       if (before - dr.plan.n > 0) audio.play('erase');
       this.lastTickSec = Math.floor(dr.plan.end);
+      this.still = 0;
+      this.holding = false;
+      if (waitBefore - dr.plan.totalWait > 0.35 && !this.previewCaught) {
+        this.hooks.tip('That undid a wait. To wait and come back the same way, loop a little to one side.', 'hint');
+      }
       this.afterPlanChange();
       return;
     }
     if (dr.extend(wx, wy)) {
+      this.still = 0;
+      this.holding = false;
       this.sim.advanceTo(dr.plan.end);
       this.afterPlanChange();
     }
@@ -244,7 +259,7 @@ export class Game {
     if (caught && !this.previewCaught) {
       audio.play('danger');
       this.hooks.haptic([30, 40, 30]);
-      this.hooks.tip(this.level.tutorial?.caught || 'You’d be seen here. Slide back along your line to undo, then try another way or wait.', 'danger');
+      this.hooks.tip('You’d be seen here. Slide back along your line to undo, or drag off the board and lift to scrap the plan.', 'danger');
     } else if (!caught && this.previewCaught) {
       this.hooks.tip(this.level.tutorial?.drawing || 'Draw the whole route in one stroke. Lift your thumb to run it.', 'drawing');
     }
@@ -267,6 +282,15 @@ export class Game {
     }
     if (this.state !== 'drawing') return;
     const plan = this.drawer.plan;
+    if (!cancel && !this.drawer.escaped && this.finger) {
+      const [wx, wy] = this.r.toWorld(this.finger[0], this.finger[1]);
+      const off = 0.6;
+      if (wx < -off || wy < -off || wx > this.level.W + off || wy > this.level.H + off) {
+        audio.play('back');
+        this.cancelDraw('scrap');
+        return;
+      }
+    }
     if (cancel || plan.length < CANCEL_LEN) {
       this.cancelDraw(cancel ? null : plan.totalWait > 0.4 ? 'look' : 'tap');
       return;
@@ -282,6 +306,7 @@ export class Game {
     this.setState('idle');
     if (why === 'tap') this.hooks.tip('Press on the thief and drag to draw a route.', 'nudge');
     else if (why === 'look') this.hooks.tip('Just looking? Drag out from the thief to draw a route.', 'nudge');
+    else if (why === 'scrap') this.hooks.tip('Plan scrapped. Press on the thief to start a new one.', 'nudge');
     else this.hooks.tip(this.level.brief, 'brief');
     this.hooks.hud(this.hudState());
   }
@@ -357,19 +382,18 @@ export class Game {
   updateDrawing(dt) {
     const dr = this.drawer;
     this.still += dt;
-    // A hold means the thumb has barely moved over the last HOLD_DELAY seconds,
-    // so a slow, careful drag never turns into accidental waiting.
-    const now = this.time;
-    while (this.hist.length > 1 && now - this.hist[1].t > HOLD_DELAY) this.hist.shift();
-    let spread = 0;
-    const f = this.finger || this.anchor;
-    for (const h of this.hist) spread = Math.max(spread, Math.hypot(h.x - f[0], h.y - f[1]));
-    if (this.still > HOLD_DELAY && spread <= STILL_PX) {
+    // A hold: the line hasn't grown for a moment and the thumb rests near its tip.
+    // (The drawer ignores tiny wobbles, so a resting thumb never creeps the line.)
+    const p = dr.plan;
+    const [fx, fy] = this.r.toWorld(this.finger[0], this.finger[1]);
+    const near = Math.hypot(fx - p.xs[p.n - 1], fy - p.ys[p.n - 1]) <= HOLD_R;
+    if (!near) { this.still = 0; this.holding = false; }
+    if (this.still > HOLD_DELAY && near) {
       if (dr.hold(dt)) {
         this.sim.advanceTo(dr.plan.end);
         if (!this.holding) {
           this.holding = true;
-          if (!this.level.tutorial?.noHoldTip) this.hooks.tip('Holding still makes the thief wait. Watch the world move.', 'hold');
+          if (!this.previewCaught && !this.previewEscaped) this.hooks.tip('Holding still makes the thief wait. Watch the world move.', 'hold');
         }
         this.waitTickT += dt;
         if (this.waitTickT > 0.5) { this.waitTickT = 0; audio.play('wait'); }
@@ -488,6 +512,8 @@ export class Game {
   onEscape() {
     const L = this.level;
     this.setState('escaped');
+    this.outcome = this.successResult();
+    this.hooks.won?.(this.outcome);
     this.exitAnim = 0;
     audio.setMood('result');
     audio.play('escape');
@@ -501,12 +527,9 @@ export class Game {
     this.resultShown = true;
     const L = this.level, s = this.sim;
     if (this.state === 'escaped') {
-      const time = s.endT;
-      const coins = popcount(s.mask & L.coinMask);
-      const stars = 1 + (coins === L.coinCount ? 1 : 0) + (time <= L.par + 1e-6 ? 1 : 0);
       this.ghostPlan = null;
       this.fails = 0;
-      this.hooks.result({ success: true, time, coins, coinTotal: L.coinCount, stars, par: L.par, level: L, plan: this.plan });
+      this.hooks.result(this.outcome || this.successResult());
     } else {
       this.fails++;
       this.ghostPlan = this.plan;
@@ -514,6 +537,14 @@ export class Game {
       const reason = this.state === 'stranded' ? 'stranded' : s.caught.by;
       this.hooks.result({ success: false, reason, level: L, fails: this.fails });
     }
+  }
+
+  successResult() {
+    const L = this.level, s = this.sim;
+    const time = s.endT;
+    const coins = popcount(s.mask & L.coinMask);
+    const stars = 1 + (coins === L.coinCount ? 1 : 0) + (time <= L.par + 1e-6 ? 1 : 0);
+    return { success: true, time, coins, coinTotal: L.coinCount, stars, par: L.par, level: L, plan: this.plan };
   }
 
   // ------------------------------------------------------------------ HUD model
@@ -652,7 +683,11 @@ export class Game {
   }
 
   frameFor(t) {
-    if (this.sim && t <= this.sim.t + 1e-9) return frameAt(this.sim.frames, t);
+    const s = this.sim;
+    if (s && t <= s.t + 1e-9) return frameAt(s.frames, t);
+    // Beyond the planned future: the idle world is only a faithful stand-in while
+    // the plan hasn't changed anything (no pickups, creaks, doors or blackout).
+    if (s && s.events.some((e) => e.type !== 'near')) return frameAt(s.frames, s.t);
     this.idleSim.advanceTo(t + DT);
     return frameAt(this.idleSim.frames, t);
   }

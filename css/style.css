@@ -364,7 +364,7 @@ canvas { display: block; }
 .case.locked .stamp-mini { color: var(--red); border-color: var(--red); }
 
 /* jobs */
-.case-blurb { font-family: var(--font-type); font-size: 14.5px; line-height: 1.45; color: var(--paper-dim); margin: 4px 0 16px; text-wrap: pretty; }
+.case-blurb { font-family: var(--font-type); font-size: 14.5px; line-height: 1.45; color: var(--paper-dim); margin-top: 4px; margin-bottom: 16px; text-wrap: pretty; }
 .job-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .job {
   appearance: none;
@@ -385,7 +385,7 @@ canvas { display: block; }
 .job.next { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(244, 194, 79, 0.15); }
 .job-thumb { width: 100%; aspect-ratio: 10 / 16; max-height: 180px; border-radius: 10px; background: #0d1122; }
 .job-meta { display: flex; align-items: baseline; gap: 8px; }
-.job-id { font-family: var(--font-display); font-weight: 900; font-size: 22px; color: var(--gold); }
+.job-id { font-family: var(--font-display); font-weight: 900; font-size: 22px; color: var(--gold); white-space: nowrap; flex: none; }
 .job-name { font-weight: 700; font-size: 15px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .job-stars { display: flex; gap: 4px; }
 .job.locked { cursor: default; opacity: 0.55; }
@@ -435,7 +435,20 @@ canvas { display: block; }
 .hud > * { pointer-events: auto; }
 .hud-title { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1; gap: 3px; pointer-events: none; }
 .hud-id { font-family: var(--font-display); font-weight: 900; font-size: 22px; color: var(--gold); letter-spacing: 0.04em; }
-.hud-name { font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-name {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
 .chips { display: flex; gap: 6px; pointer-events: none; }
 .chip {
   display: inline-flex;
@@ -704,7 +717,7 @@ canvas { display: block; }
 }
 
 /* dim the skyline behind list screens so text stays legible */
-#cases, #jobs { background: linear-gradient(180deg, rgba(11, 13, 26, 0.72), rgba(11, 13, 26, 0.9) 40%, rgba(11, 13, 26, 0.96)); }
+#cases, #jobs { background: linear-gradient(180deg, rgba(11, 13, 26, 0.86), rgba(11, 13, 26, 0.92) 40%, rgba(11, 13, 26, 0.96)); }
 
 /* level title card */
 .level-card {
@@ -749,9 +762,50 @@ canvas { display: block; }
   .chips { gap: 4px; }
   .chip { height: 28px; padding: 0 7px 0 6px; font-size: 15px; gap: 4px; }
   .ic { width: 12px; height: 12px; }
-  .hud-name { letter-spacing: 0.05em; font-size: 12px; }
+  .hud-name { letter-spacing: 0.04em; font-size: 12px; }
   .hud-id { font-size: 20px; }
 }
 @media (min-width: 640px) {
   .hud, .tipbar { max-width: 560px; margin: 0 auto; }
+}
+
+/* small phones (iPhone SE 1st gen, compact Androids) */
+@media (max-width: 350px), (max-height: 600px) {
+  .sheet { padding: 18px 16px calc(var(--safe-b) + 14px); gap: 12px; }
+  .sheet-result { gap: 10px; padding-top: 20px; }
+  .stamp { font-size: 32px; }
+  .result-art { width: 96px; height: 76px; }
+  .star { width: 46px; height: 46px; }
+  .star-label { font-size: 12px; }
+  .result-loot { font-size: 14px; }
+  .result-loot b { font-size: 18px; }
+  .sheet-title { font-size: 30px; }
+}
+@media (max-width: 350px) {
+  .job-meta { gap: 6px; }
+  .job-id { font-size: 19px; white-space: nowrap; }
+  .job-name { font-size: 13.5px; }
+  .case-card { padding: 18px 16px 16px; }
+  .case-card-title { font-size: 30px; }
+}
+
+/* locked files rattle when tapped */
+.denied { animation: denied 0.36s var(--ease-out); }
+@keyframes denied {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -6px 0; }
+  40% { translate: 5px 0; }
+  60% { translate: -3px 0; }
+  80% { translate: 2px 0; }
+}
+
+/* wide screens: line the header up with the centred column below it */
+@media (min-width: 640px) {
+  .bar {
+    padding-left: max(16px, calc((100% - 520px) / 2));
+    padding-right: max(16px, calc((100% - 520px) / 2));
+  }
+}
+@media (max-width: 350px) {
+  .hud-name { display: none; }
 }

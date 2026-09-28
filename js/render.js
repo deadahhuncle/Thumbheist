@@ -1312,7 +1312,9 @@ export class Renderer {
     const w = Math.max(w1, w2) + 26;
     const h = sub ? 48 : 32;
     px = clamp(px, w / 2 + 8, this.cw - w / 2 - 8);
-    if (py - h / 2 < 8) py = (r.fingerY ?? hy) + 70;
+    // Keep the readout clear of the HUD: flip it below the thumb near the top.
+    const top = (this.area ? this.area.y : 0) + 6;
+    if (py - h / 2 < top) py = Math.min((r.fingerY ?? hy) + 70, this.ch - h / 2 - 8);
     ctx.save();
     ctx.translate(px, py);
     ctx.fillStyle = r.danger ? 'rgba(120,14,28,0.92)' : r.good ? 'rgba(10,60,50,0.92)' : 'rgba(12,14,28,0.9)';

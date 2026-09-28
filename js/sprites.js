@@ -376,6 +376,29 @@ const LOOT = {
     ctx.fillStyle = '#fff';
     [[-0.26, -0.12], [0, -0.2], [0.26, -0.12]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 0.025, 0, TAU); ctx.fill(); });
   },
+  sceptre(ctx) {
+    ctx.save();
+    ctx.rotate(0.55);
+    ctx.fillStyle = '#9c6a16';
+    rr(ctx, -0.055, -0.12, 0.11, 0.44, 0.04); ctx.fill();
+    ctx.fillStyle = '#f4c24f';
+    rr(ctx, -0.04, -0.12, 0.05, 0.44, 0.025); ctx.fill();
+    ctx.fillStyle = '#d9a93a';
+    rr(ctx, -0.09, 0.12, 0.18, 0.06, 0.02); ctx.fill();
+    rr(ctx, -0.09, -0.15, 0.18, 0.06, 0.02); ctx.fill();
+    ctx.fillStyle = '#56a8ff';
+    ctx.beginPath(); ctx.arc(0, 0.3, 0.045, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#f4c24f';
+    ctx.beginPath(); ctx.arc(0, -0.25, 0.13, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#b8862a';
+    ctx.fillRect(-0.13, -0.265, 0.26, 0.035);
+    ctx.fillRect(-0.0175, -0.38, 0.035, 0.26);
+    ctx.fillStyle = '#e8364f';
+    ctx.beginPath(); ctx.moveTo(0, -0.47); ctx.lineTo(0.05, -0.4); ctx.lineTo(0, -0.36); ctx.lineTo(-0.05, -0.4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath(); ctx.arc(-0.05, -0.3, 0.03, 0, TAU); ctx.fill();
+    ctx.restore();
+  },
   vase(ctx) {
     ctx.fillStyle = '#eef3fb';
     ctx.beginPath();

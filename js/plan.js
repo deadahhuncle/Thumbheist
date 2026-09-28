@@ -8,6 +8,7 @@ export const SPEED = 2.6;          // tiles per second
 export const THIEF_R = 0.28;       // collision radius used while drawing
 export const SPACING = 0.14;       // distance between plan vertices
 export const RETRACE_R = 0.3;      // how close the finger must be to the line to erase it
+export const DEADZONE = 0.24;      // the thumb must move this far from the tip to extend the line
 export const RETRACE_WINDOW = 1.6; // how far back along the line an undo can reach per move
 export const MAX_TIME = 90;        // longest plan we accept (seconds)
 const PICK_R_DRAW = 0.44;          // a touch tighter than the sim so the sim always agrees
@@ -169,6 +170,8 @@ export class Drawer {
     if (this.escaped) return false;
     const L = this.level;
     const p = this.plan;
+    // Ignore small wobbles around the tip so a resting thumb doesn't creep the line.
+    if (Math.hypot(fx - p.xs[p.n - 1], fy - p.ys[p.n - 1]) < DEADZONE) return false;
     let block = this.blockFn();
     let changed = false;
     for (let guard = 0; guard < 400; guard++) {

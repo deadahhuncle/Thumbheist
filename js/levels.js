@@ -884,8 +884,8 @@ export const CHAPTERS = [
         title: 'Short Circuit',
         brief: 'The beams around the vault never blink. The fuse box is past the guard.',
         hint: 'Reach the fuse box behind the guard, then run for the beams before they return.',
-        loot: { name: 'Sceptre of the Meridian', value: 460, kind: 'crown' },
-        powerDuration: 6,
+        loot: { name: 'Sceptre of the Meridian', value: 460, kind: 'sceptre' },
+        powerDuration: 7,
         map: [
           '##########',
           '#...$....#',
@@ -949,7 +949,7 @@ export const CHAPTERS = [
         brief: 'A glass bridge between towers. Nowhere to hide, and the beams keep a brisk beat.',
         hint: 'Cross in the gaps: short dash, wait, short dash.',
         loot: { name: 'The Twin-Tower Sapphire', value: 520, kind: 'gem' },
-        powerDuration: 4,
+        powerDuration: 5,
         map: [
           '##########',
           '#.$....c.#',
