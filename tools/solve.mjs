@@ -356,7 +356,10 @@ for (const [ci, ch] of CHAPTERS.entries()) {
           console.log(draw(level, pts2));
           console.log('   waits:', pts2.filter((p) => p[2] > 0).map((p) => `(${p[0] - 0.5},${p[1] - 0.5}) ${p[2].toFixed(2)}s`).join('  ') || 'none');
         }
-      } else row.coins = 'no route';
+      } else {
+        row.coins = 'no route';
+        solutions[def.id] = { any: pts, all: null, t: null };
+      }
       if (verbose && all !== any) {
         console.log(`   fastest ignoring coins: ${any.node.t.toFixed(2)}s (${sim.status})`);
         console.log(draw(level, pts));

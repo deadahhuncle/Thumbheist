@@ -81,6 +81,7 @@ const drag = (d, pts, step = 0.05) => {
     const s = sol[l.id];
     if (!s) { ok(false, `${l.id} has a stored solution`); continue; }
     const L = lv(l.id);
+    if (!s.all) { ok(false, `${l.id} has a reference route that takes every coin`); continue; }
     const plan = Plan.fromPoints(s.all);
     const sim = new Sim(L, plan); sim.advanceTo(plan.end + 0.5);
     ok(sim.status === 'escaped' && (sim.mask & L.coinMask) === L.coinMask, `${l.id} reference route escapes with every coin (${sim.status}, ${sim.endT.toFixed(2)}s, par ${L.par})`);
